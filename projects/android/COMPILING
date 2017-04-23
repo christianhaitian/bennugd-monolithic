@@ -1,0 +1,11 @@
+* Set the ANDROID_NDK_HOME environment variable to point to the folder
+  containing the Android NDK.
+* Edit build.gradle to suit your needs.
+  You should -at least- edit applicationId and the signing keys stuff to match your system.
+* Download gradle 2.14.1 (might work on later versions) bin package from
+  http://services.gradle.org/distributions/gradle-2.14.1-bin.zip
+* Unzip it to some folder ([GRADLE_FOLDER]).
+* Open a command line prompt at this folder
+* Run [GRADLE_FOLDER]/gradle wrapper
+* If that succeeds, build the code with "./gradlew assembleDebug"
+* You can build, sign & install on device with "./gradlew appStart"
