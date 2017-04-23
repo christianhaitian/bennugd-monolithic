@@ -8,4 +8,4 @@
 * Open a command line prompt at this folder
 * Run [GRADLE_FOLDER]/gradle wrapper
 * If that succeeds, build the code with "./gradlew assembleDebug"
-* You can build, sign & install on device with "./gradlew appStart"
+* You can build, sign & install on device with "./gradlew installDebug"
