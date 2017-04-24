@@ -6,7 +6,7 @@ buildscript {
   }
   dependencies {
     // https://developer.android.com/studio/releases/gradle-plugin.html#revisions
-    classpath 'com.android.tools.build:gradle:2.2.0'
+    classpath 'com.android.tools.build:gradle:2.3.1'
     classpath 'com.google.gms:google-services:3.0.0'
   }
 }
@@ -37,7 +37,7 @@ project.ext {
 }
 
 android {
-    compileSdkVersion 19
+    compileSdkVersion 25
 
     // https://developer.android.com/studio/releases/build-tools.html
     buildToolsVersion "25.0.2"
@@ -55,7 +55,7 @@ android {
     defaultConfig {
         applicationId 'org.bennugd.samplegame'
         minSdkVersion 12
-        targetSdkVersion 19
+        targetSdkVersion 25
     }
 
     signingConfigs {
@@ -68,38 +68,47 @@ android {
     }
 
     buildTypes {
-      release {
-         minifyEnabled true
-         proguardFile getDefaultProguardFile('proguard-android.txt')
-
-         signingConfig signingConfigs.release
-      }
-      debug {
-         applicationIdSuffix ".debug"
-         debuggable true
-      }
+        release {
+            minifyEnabled true
+            proguardFile 'Unrecognized value'
+            signingConfig signingConfigs.release
+            zipAlignEnabled true
+        }
+        debug {
+            applicationIdSuffix ".debug"
+            debuggable true
+            jniDebuggable true
+        }
     }
 }
 
 dependencies {
-  compile fileTree(dir: 'libs', include: ['*.jar'])
-
-  // https://developers.google.com/android/guides/releases
-  // Add some package from Google repository, eg:
-  // compile 'com.google.android.gms:play-services-ads:9.6.1'
-
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    // https://developers.google.com/android/guides/releases
+    // Add some package from Google repository, eg:
+    // compile 'com.google.android.gms:play-services-ads:9.6.1'
 }
 
 // apply plugin: 'com.google.gms.google-services'
 
 task ndkBuildCompile(type:Exec) {
-  description 'Use ndk-build to compile the C++ application.'
-  commandLine("${project.ext.ndk_dir}${File.separator}ndk-build")
+    description 'Use ndk-build to compile the C++ application.'
+    String osName = System.getProperty("os.name").toLowerCase();
+    if (osName.contains("windows")) {
+        commandLine("${project.ext.ndk_dir}${File.separator}ndk-build.cmd")
+    } else {
+        commandLine("${project.ext.ndk_dir}${File.separator}ndk-build")
+    }
 }
 
 task ndkBuildClean(type:Exec) {
-  description 'Use ndk-build to clean the C++ application.'
-  commandLine("${project.ext.ndk_dir}${File.separator}ndk-build", "clean")
+    description 'Use ndk-build to clean the C++ application.'
+    String osName = System.getProperty("os.name").toLowerCase();
+    if (osName.contains("windows")) {
+        commandLine("${project.ext.ndk_dir}${File.separator}ndk-build.cmd", "clean")
+    } else {
+        commandLine("${project.ext.ndk_dir}${File.separator}ndk-build", "clean")
+    }
 }
 
 task appStart(type: Exec, dependsOn: 'installRelease') {
