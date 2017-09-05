@@ -61,7 +61,9 @@
 
 #include <typedef_st.h>
 #include <instance_st.h>
+#ifndef __BGDC__
 #include <sysprocs_st.h>
+#endif
 
 #include <commons_defs.h>
 

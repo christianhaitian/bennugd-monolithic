@@ -28,7 +28,7 @@
 
 #ifndef __I_PROCDEF_ST_H
 #define __I_PROCDEF_ST_H
-
+#error Included instance_st.h
 #include "instance_st.h"
 
 /* Process definitions, more simple that in the compiler */
