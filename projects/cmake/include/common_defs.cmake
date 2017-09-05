@@ -11,3 +11,5 @@ add_definitions(-DNO_FSOCK)
 add_definitions(-DNO_MODIAP)
 add_definitions(-DNO_MODIMAGE)
 add_definitions(-DVERSION="1.0.0")
+# TODO: Make cross-platform
+add_definitions(-DTARGET_LINUX)

@@ -3,37 +3,30 @@ cmake_minimum_required(VERSION 3.4)
 # Require pxtrtm
 add_subdirectory(bgdrtm)
 # Required stuff
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${pxtp_SOURCE_DIR}/../include")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${bgdi_SOURCE_DIR}/../include")
 find_package(SDL2 2.0.4 REQUIRED)
 find_package(SDL2_Mixer REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(PNG REQUIRED)
-find_package(JPEG REQUIRED)
 find_package(OGG REQUIRED)
 find_package(Vorbis REQUIRED)
-find_package(Theora REQUIRED)
-find_package(Freetype REQUIRED)
-find_package(OpenAL REQUIRED)
-find_package(TRE REQUIRED)
-find_package(CURL)
-find_package(STEAMWORKS)
 # Preprocessor macros
-add_definitions(-D__PXTP__)
+add_definitions(-D__BGDI__)
 include(common_defs)
 # Source files
 set(SOURCE_FILES
-  ${pxtp_SOURCE_DIR}/../../../core/pxtp/include/pxtp.h
-  ${pxtp_SOURCE_DIR}/../../../core/pxtp/src/main.c)
+  ${bgdi_SOURCE_DIR}/../../../core/bgdi/include/bgdi.h
+  ${bgdi_SOURCE_DIR}/../../../core/bgdi/src/main.c)
 # Include dirs
-include_directories(${pxtp_SOURCE_DIR}/../../../core/pxtp/include
-                    ${pxtp_SOURCE_DIR}/../../../core/include
-                    ${pxtp_SOURCE_DIR}/../../../core/pxtrtm/include/)
+include_directories(${bgdi_SOURCE_DIR}/../../../core/bgdi/include
+                    ${bgdi_SOURCE_DIR}/../../../core/include
+                    ${bgdi_SOURCE_DIR}/../../../core/bgdrtm/include/)
 
 if(WIN32)
     set(EXTRA_LIBS "-lshlwapi -lwsock32 -lm")
 	set(SOURCE_FILES
       ${SOURCE_FILES}
-      ${pxtp_SOURCE_DIR}/pxtp.rc)
+      ${bgdi_SOURCE_DIR}/bgdi.rc)
 else()
     set(EXTRA_LIBS "-lm")
 endif()
@@ -41,38 +34,19 @@ endif()
 # Main executable
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-# Optional libraries
-if(CURL_FOUND)
-    set(CURL_LIBRARY ${CURL_LIBRARY})
-else()
-    set(CURL_LIBRARY "")
-endif()
-if(STEAMWORKS_FOUND)
-    set(STEAM_LIB ${STEAMWORKS_LIBRARY})
-else()
-    set(STEAM_LIB "")
-endif()
-
 # Include the compiler flags from the external include file
 include(compiler_flags)
 
 # Link the executable to the libraries
 target_link_libraries(${PROJECT_NAME}
-                      pxtrtm
+                      bgdrtm
                       ${SDL2_LIBRARY}
                       ${SDL2_MIXER_LIBRARIES}
                       ${ZLIB_LIBRARIES}
                       ${PNG_LIBRARIES}
-                      ${JPEG_LIBRARIES}
                       ${OGG_LIBRARY}
                       ${VORBIS_LIBRARY}
-                      ${THEORA_LIBRARIES}
-                      ${FREETYPE_LIBRARIES}
-                      ${OPENAL_LIBRARY}
-                      ${TRE_LIBRARY}
-                      ${CURL_LIBRARY}
-                      ${EXTRA_LIBS}
-                      ${STEAM_LIB})
+                      ${EXTRA_LIBS})
 
 # Installation instructions
 if(WIN32)
