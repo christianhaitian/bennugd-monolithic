@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <SDL_log.h>
 
 #include "bgddl.h"
 #include "xstrings.h"

@@ -41,8 +41,8 @@
     #ifndef _LIBKEY_C
     extern DLLIMPORT void hotkey_add(int mod, int sym, HOTKEY_CALLBACK callback);
 
-    extern DLLIMPORT key_equiv key_table[] ;           /* Now we have a search table with equivs */
-    extern DLLIMPORT unsigned char * keystate ;        /* Pointer to key states */
+    extern key_equiv key_table[] ;           /* Now we have a search table with equivs */
+    extern unsigned char * keystate ;        /* Pointer to key states */
     #endif
 
 #endif
