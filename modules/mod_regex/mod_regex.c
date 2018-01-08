@@ -1,9 +1,10 @@
 /*
- *  Copyright © 2006-2012 SplinterGU (Fenix/Bennugd)
- *  Copyright © 2002-2006 Fenix Team (Fenix)
- *  Copyright © 1999-2002 José Luis Cebrián Pagüe (Fenix)
+ *  Copyright (C) 2014-2016 Joseba García Etxebarria <joseba.gar@gmail.com>
+ *  Copyright (C) 2006-2012 SplinterGU (Fenix/Bennugd)
+ *  Copyright (C) 2002-2006 Fenix Team (Fenix)
+ *  Copyright (C) 1999-2002 José Luis Cebrián Pagüe (Fenix)
  *
- *  This file is part of Bennu - Game Development
+ *  This file is part of BennuGD
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty. In no event will the authors be held liable for any damages
@@ -38,29 +39,86 @@
 #include "xstrings.h"
 
 #include "dlvaracc.h"
-#include "regex.h"
+#include <tre/tre.h>
+
+#ifndef __MONOLITHIC__
+#include "mod_regex_symbols.h"
+#else
+extern DLVARFIXUP __bgdexport(mod_regex, globals_fixup)[];
+#endif
 
 /* ----------------------------------------------------------------- */
 
-enum {
-    REGEX_REG = 0
-};
+enum { REGEX_REG = 0 };
 
 /* ----------------------------------------------------------------- */
-/* Definicion de variables globales (usada en tiempo de compilacion) */
+// Generic replace function based on TRE
+static int replace(const char *reg, const char *str, const char *rep, int cflags) {
+    /* Replacing is, basically,
+       splitting followed by joining */
+    int result_string = 0;
+    unsigned n = 0, count = 0, total_length = 0;
+    char *pieces[16];
+    char *result, *ptr;
+    regex_t pb;
+    regmatch_t pmatch[1];
 
-char * __bgdexport( mod_regex, globals_def ) = "STRING regex_reg[15];\n";
+    if (tre_regcomp(&pb, reg, cflags) == REG_OK) {
+        // Match repeatedly, until we can't match anymore
+        while (tre_regexec(&pb, str, 1, pmatch, 0) != REG_NOMATCH) {
+            pieces[count] = malloc(pmatch[0].rm_so + 1);
+            strncpy(pieces[count], str, pmatch[0].rm_so);
+            pieces[count][pmatch[0].rm_so] = '\0';
+            str += pmatch[0].rm_eo;
+            count++;
+            if (count == 16) {
+                break;
+            }
+        }
 
-/* ----------------------------------------------------------------- */
-/* Son las variables que se desea acceder.                           */
-/* El interprete completa esta estructura, si la variable existe.    */
-/* (usada en tiempo de ejecucion)                                    */
+        /* We're missing the last chunk of text, so
+           we add it here */
+        if (count < 15) {
+            pieces[count] = malloc(strlen(str) + 1);
+            strncpy(pieces[count], str, strlen(str));
+            pieces[count][strlen(str)] = '\0';
+            count++;
+        }
+    } else {
+        // Return an empty string
+        result_string = string_new("");
+        string_use(result_string);
+        return result_string;
+    }
 
-DLVARFIXUP __bgdexport( mod_regex, globals_fixup) [] =   {
-    /* Nombre de variable global, puntero al dato, tamaño del elemento, cantidad de elementos */
-                                { "regex_reg", NULL, -1, -1 },
-                                { NULL, NULL, -1, -1 }
-                                };
+    // Compute the total length of the resulting string
+    for (n = 0; n < count; n++) {
+        total_length += strlen(pieces[n]);
+    }
+    total_length += (count - 1) * strlen(rep);
+    result = malloc(total_length + 1);
+    ptr    = result;
+
+    // Copy the strings to result, and free the pieces
+    for (n = 0; n < count; n++) {
+        memcpy(ptr, pieces[n], strlen(pieces[n]));
+        ptr += strlen(pieces[n]);
+        if (n < count - 1) {
+            memcpy(ptr, rep, strlen(rep));
+            ptr += strlen(rep);
+        }
+        free(pieces[n]);
+    }
+    *ptr = 0;
+
+    // Return the new string
+    result_string = string_new(result);
+    string_use(result_string);
+
+    free(result);
+
+    return result_string;
+}
 
 /* ----------------------------------------------------------------- */
 
@@ -70,234 +128,92 @@ DLVARFIXUP __bgdexport( mod_regex, globals_fixup) [] =   {
  *  of the match or -1 if none found.
  */
 
-static int modregex_regex (INSTANCE * my, int * params)
-{
-    const char * reg = string_get(params[0]);
-    const char * str = string_get(params[1]);
-    int result = -1;
+int modregex_regex(INSTANCE *my, int *params) {
+    const char *reg = string_get(params[0]);
+    const char *str = string_get(params[1]);
+    int pos         = -1;
     unsigned n;
 
-    struct re_pattern_buffer pb;
-    struct re_registers re;
-    int start[16];
-    int end[16];
-    int * regex_reg;
+    regex_t pb;
+    regmatch_t pmatch[1];
 
-    /* Alloc the pattern resources */
+    int *regex_reg;
 
-    memset (&pb, 0, sizeof(pb));
-    memset (&re, 0, sizeof(re));
-    pb.buffer = malloc(4096);
-    pb.allocated = 4096;
-    pb.fastmap = malloc(256);
-    pb.regs_allocated = 16;
-    re.num_regs = 16;
-    re.start = start;
-    re.end = end;
+    // Compile the regular expression, then match it
+    if (tre_regcomp(&pb, reg, REG_EXTENDED | REG_ICASE) == REG_OK) {
+        // Fill the regex_reg global variables
+        regex_reg = (int *)&GLODWORD(mod_regex, REGEX_REG);
+        n = 0;
+        while (tre_regexec(&pb, str, 1, pmatch, 0) != REG_NOMATCH && n < 16) {
+            // Store the position
+            if (pos == -1) {
+                pos = pmatch[0].rm_so;
+            }
+            // Store the strings for PixTudio use
+            string_discard(regex_reg[n]);
+            regex_reg[n] = string_newa(str + pmatch[0].rm_so, pmatch[0].rm_eo - pmatch[0].rm_so);
+            string_use(regex_reg[n]);
+            n++;
 
-    re_syntax_options = RE_SYNTAX_POSIX_MINIMAL_EXTENDED | REG_ICASE;
-
-    /* Match the regex */
-
-    if (re_compile_pattern (reg, strlen(reg), &pb) == 0)
-    {
-        result = re_search (&pb, str, strlen(str), 0, strlen(str), &re);
-
-        if (result != -1)
-        {
-            /* Fill the regex_reg global variables */
-            regex_reg = (int *) &GLODWORD( mod_regex, REGEX_REG);
-            for (n = 0 ; n < 16 && n <= pb.re_nsub ; n++)
-            {
-                string_discard (regex_reg[n]);
-                regex_reg[n] = string_newa (str + re.start[n], re.end[n] - re.start[n]);
-                string_use (regex_reg[n]);
+            // Move the pointer to the end of the previous match
+            str += pmatch[0].rm_eo;
+            if (strlen(str) <= 0) {
+                break;
             }
         }
+
+        tre_regfree(&pb);
     }
 
     /* Free the resources */
-    free (pb.buffer);
-    free (pb.fastmap);
     string_discard(params[0]);
     string_discard(params[1]);
 
-    return result;
+    return pos;
 }
 
-/** REGEX_REPLACE (STRING pattern, STRING string, STRING replacement)
- *  Match a regular expresion to the given string. For each
- *  match, substitute it with the given replacement. \0 - \9
- *  escape sequences are accepted in the replacement.
+/** STR_REPLACE (STRING search, STRING string, STRING replacement)
+ *  Replaces the given "search" occurences in "string" for
+ * "replacement".
  *  Returns the resulting string. REGEX_REG variables are
  *  filled with information about the first match.
  */
+int modregex_string_replace(INSTANCE *my, int *params) {
+    /* Replacing is, basically,
+       splitting followed by joining */
+    const char *reg = string_get(params[0]);
+    const char *str = string_get(params[1]);
+    const char *rep = string_get(params[2]);
 
-static int modregex_regex_replace (INSTANCE * my, int * params)
-{
-    const char * reg = string_get(params[0]);
-    const char * rep = string_get(params[1]);
-    const char * str = string_get(params[2]);
+    int result_string = replace(reg, str, rep, REG_LITERAL);
 
-    unsigned reg_len = strlen(reg);
-    unsigned str_len = strlen(str);
-    unsigned rep_len = strlen(rep);
-    char * replacement;
-    unsigned replacement_len;
-    int fixed_replacement = strchr(rep, '\\') ? 0:1;
-
-    struct re_pattern_buffer pb;
-    struct re_registers re;
-    int start[16];
-    int end[16];
-
-    unsigned startpos = 0;
-    unsigned nextpos;
-    int regex_filled = 0;
-
-    char * result = 0;
-    unsigned result_allocated = 0;
-    int result_string = 0;
-
-    unsigned n;
-    int * regex_reg;
-
-    /* Alloc a buffer for the resulting string */
-
-    result = malloc(128);
-    result_allocated = 128;
-    *result = 0;
-
-    /* Alloc the pattern resources */
-
-    memset (&pb, 0, sizeof(pb));
-    memset (&re, 0, sizeof(re));
-    pb.buffer = malloc(4096);
-    pb.allocated = 4096;
-    pb.used = 0;
-    pb.fastmap = malloc(256);
-    pb.translate = NULL;
-    pb.fastmap_accurate = 0;
-    pb.regs_allocated = 16;
-    re.start = start;
-    re.end = end;
-
-    re_syntax_options = RE_SYNTAX_POSIX_MINIMAL_EXTENDED;
-
-    /* Run the regex */
-
-    if (re_compile_pattern (reg, reg_len, &pb) == 0)
-    {
-        startpos = 0;
-
-        while (startpos < str_len)
-        {
-            nextpos = re_search (&pb, str, str_len, startpos,
-                str_len - startpos, &re);
-            if ((int)nextpos < 0) break;
-
-            /* Fill the REGEX_REG global variables */
-
-            if (regex_filled == 0)
-            {
-                regex_filled = 1;
-                regex_reg = (int *)&GLODWORD( mod_regex, REGEX_REG);
-                for (n = 0 ; n < 16 && n <= pb.re_nsub ; n++)
-                {
-                    string_discard (regex_reg[n]);
-                    regex_reg[n] = string_newa (str + re.start[n], re.end[n] - re.start[n]);
-                    string_use (regex_reg[n]);
-                }
-            }
-
-            /* Prepare the replacement string */
-
-            if (fixed_replacement == 0)
-            {
-                int total_length = rep_len;
-                const char * bptr;
-                char *  ptr;
-
-                /* Count the size */
-
-                ptr = strchr(rep, '\\');
-                while (ptr)
-                {
-                    if (ptr[1] >= '0' && ptr[1] <= '9')
-                        total_length += re.end[ptr[1]-'0'] - re.start[ptr[1]-'0'] - 2;
-                    ptr = strchr(ptr+1, '\\');
-                }
-
-                /* Fill the replacement string */
-
-                replacement = calloc (total_length+1, 1);
-
-                bptr = rep;
-                ptr = strchr(rep, '\\');
-                while (ptr)
-                {
-                    if (ptr[1] >= '0' && ptr[1] <= '9')
-                    {
-                        strncpy (replacement+strlen(replacement), bptr, ptr-bptr);
-                        strncpy (replacement+strlen(replacement), str + re.start[ptr[1]-'0'], re.end[ptr[1]-'0'] - re.start[ptr[1]-'0']);
-                        bptr = ptr+2;
-                    }
-                    ptr = strchr (ptr+1, '\\');
-                }
-                strcat (replacement, bptr);
-                replacement_len = strlen(replacement);
-            }
-            else
-            {
-                replacement = (char *)rep;
-                replacement_len = rep_len;
-            }
-
-            /* Fill the resulting string */
-
-            if (result_allocated < strlen(result)+(nextpos-startpos)+1+replacement_len)
-            {
-                result_allocated += ((nextpos-startpos+1+replacement_len) & ~127) + 128;
-                result = realloc(result, result_allocated);
-            }
-            result[strlen(result)+(nextpos-startpos)] = 0;
-            memcpy (result + strlen(result), str+startpos, nextpos-startpos);
-            strcat (result, replacement);
-
-            if (fixed_replacement == 0) free (replacement);
-
-            /* Continue the search */
-
-            startpos = nextpos+re_match(&pb, str, str_len, nextpos, 0);
-            if (startpos <  nextpos) break;
-            if (startpos == nextpos) startpos++;
-        }
-    }
-
-    /* Copy remaining characters */
-
-    nextpos = str_len;
-    if (result_allocated < strlen(result)+(nextpos-startpos)+1)
-    {
-        result_allocated += ((nextpos-startpos+1) & ~127) + 128;
-        result = realloc(result, result_allocated);
-    }
-    result[strlen(result)+(nextpos-startpos)] = 0;
-    memcpy (result + strlen(result), str+startpos, nextpos-startpos);
-
-    /* Free resources */
-
-    free (pb.buffer);
-    free (pb.fastmap);
+    // Free resource
     string_discard(params[0]);
     string_discard(params[1]);
     string_discard(params[2]);
 
-    /* Return the new string */
+    return result_string;
+}
 
-    result_string = string_new(result);
-    string_use(result_string);
-    free(result);
+/** REGEX_REPLACE (STRING pattern, STRING string, STRING replacement)
+ *  Match a regular expresion to the given string. For each
+ *  match, substitute it with the given replacement.
+ *  Returns the resulting string. REGEX_REG variables are
+ *  filled with information about the first match.
+ */
+int modregex_regex_replace(INSTANCE *my, int *params) {
+    /* Replacing is, basically,
+       splitting followed by joining */
+    const char *reg = string_get(params[0]);
+    const char *str = string_get(params[1]);
+    const char *rep = string_get(params[2]);
+
+    int result_string = replace(reg, str, rep, REG_EXTENDED);
+
+    // Free resource
+    string_discard(params[0]);
+    string_discard(params[1]);
+    string_discard(params[2]);
 
     return result_string;
 }
@@ -309,63 +225,42 @@ static int modregex_regex_replace (INSTANCE * my, int * params)
  *
  */
 
-static int modregex_split (INSTANCE * my, int * params)
-{
-    const char * reg = string_get(params[0]);
-    const char * str = string_get(params[1]);
-    int * result_array = (int *)params[2];
+int modregex_split(INSTANCE *my, int *params) {
+    const char *reg       = string_get(params[0]);
+    const char *str       = string_get(params[1]);
+    int *result_array     = (int *)params[2];
     int result_array_size = params[3];
-    int count = 0;
-    int pos, lastpos = 0;
+    int count             = 0;
 
-    struct re_pattern_buffer pb;
-    struct re_registers re;
-    int start[16];
-    int end[16];
+    regex_t pb;
+    regmatch_t pmatch[1];
 
-    /* Alloc the pattern resources */
-
-    memset (&pb, 0, sizeof(pb));
-    memset (&re, 0, sizeof(re));
-    pb.buffer = malloc(4096);
-    pb.allocated = 4096;
-    pb.fastmap = malloc(256);
-    pb.regs_allocated = 16;
-    re.num_regs = 16;
-    re.start = start;
-    re.end = end;
-
-    re_syntax_options = RE_SYNTAX_POSIX_MINIMAL_EXTENDED;
-
-    /* Match the regex */
-
-    if (re_compile_pattern (reg, strlen(reg), &pb) == 0)
-    {
-        for (;;)
-        {
-            pos = re_search (&pb, str, strlen(str), lastpos, strlen(str), &re);
-            if (pos == -1) break;
-            *result_array = string_newa (str + lastpos, pos-lastpos);
+    if (tre_regcomp(&pb, reg, REG_EXTENDED) == REG_OK) {
+        // Match repeatedly, until we can't match anymore
+        while (tre_regexec(&pb, str, 1, pmatch, 0) != REG_NOMATCH) {
+            *result_array = string_newa(str, pmatch[0].rm_so);
+            str += pmatch[0].rm_eo;
             string_use(*result_array);
             result_array++;
             count++;
             result_array_size--;
-            if (result_array_size == 0) break;
-            lastpos = pos + re_match (&pb, str, strlen(str), pos, 0);
-            if (lastpos < pos) break;
-            if (lastpos == pos) lastpos++;
+            if (result_array_size == 0) {
+                break;
+            }
         }
-        if (result_array_size > 0)
-        {
-            *result_array = string_new (str + lastpos);
-            string_use (*result_array);
+
+        /* We're missing the last chunk of text, so
+           we add it here */
+        if (result_array_size > 0) {
+            *result_array = string_new(str);
+            result_array++;
+            string_use(*result_array);
+            result_array_size--;
             count++;
         }
     }
 
     /* Free the resources */
-    free (pb.buffer);
-    free (pb.fastmap);
     string_discard(params[0]);
     string_discard(params[1]);
 
@@ -377,51 +272,37 @@ static int modregex_split (INSTANCE * my, int * params)
  *  resulting string.
  */
 
-static int modregex_join (INSTANCE * my, int * params)
-{
-    const char * sep = string_get(params[0]);
-    int * string_array = (int *)params[1];
-    int count = params[2] ;
-    int total_length = 0;
-    int sep_len = strlen(sep);
+int modregex_join(INSTANCE *my, int *params) {
+    const char *sep   = string_get(params[0]);
+    int *string_array = (int *)params[1];
+    int count         = params[2];
+    int total_length  = 0;
+    int sep_len       = strlen(sep);
     int n;
-    char * buffer;
-    char * ptr;
+    char *buffer;
+    char *ptr;
     int result;
 
-    for (n = 0 ; n < count ; n++)
-    {
+    for (n = 0; n < count; n++) {
         total_length += strlen(string_get(string_array[n]));
-        if (n < count-1) total_length += sep_len;
+        if (n < count - 1)
+            total_length += sep_len;
     }
 
-    buffer = malloc(total_length+1);
-    ptr = buffer;
+    buffer = malloc(total_length + 1);
+    ptr    = buffer;
 
-    for (n = 0 ; n < count ; n++)
-    {
-        memcpy (ptr, string_get(string_array[n]), strlen(string_get(string_array[n])));
+    for (n = 0; n < count; n++) {
+        memcpy(ptr, string_get(string_array[n]), strlen(string_get(string_array[n])));
         ptr += strlen(string_get(string_array[n]));
-        if (n < count-1)
-        {
-            memcpy (ptr, sep, sep_len);
+        if (n < count - 1) {
+            memcpy(ptr, sep, sep_len);
             ptr += sep_len;
         }
     }
-    *ptr = 0;
+    *ptr   = 0;
     result = string_new(buffer);
     free(buffer);
     string_use(result);
     return result;
 }
-
-/* ---------------------------------------------------------------------- */
-
-DLSYSFUNCS __bgdexport( mod_regex, functions_exports) [] = {
-    /* Regex */
-    { "REGEX"                , "SS"    , TYPE_INT    , modregex_regex           },
-    { "REGEX_REPLACE"        , "SSS"   , TYPE_STRING , modregex_regex_replace   },
-    { "SPLIT"                , "SSPI"  , TYPE_INT    , modregex_split           },
-    { "JOIN"                 , "SPI"   , TYPE_STRING , modregex_join            },
-    { 0                      , 0       , 0           , 0                        }
-};

@@ -62,6 +62,7 @@ set(SOURCE_FILES
   ${bgdrtm_SOURCE_DIR}/../../../../modules/librender/librender.c
   ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_video/mod_video.c
   ${bgdrtm_SOURCE_DIR}/../../../../modules/libmouse/libmouse.c
+  ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_multi/mod_multi.c
   ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_map/file_fnt.c
   ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_map/file_fpg.c
   ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_map/file_map.c
@@ -79,6 +80,7 @@ set(SOURCE_FILES
   ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_scroll/mod_scroll.c
   ${bgdrtm_SOURCE_DIR}/../../../../modules/libdraw/libdraw.c
   ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_draw/mod_draw.c
+  ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_regex/mod_regex.c
   ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_screen/mod_screen.c
   ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_path/mod_path.c
   ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_effects/mod_effects.c
@@ -87,9 +89,7 @@ set(SOURCE_FILES
   ${bgdrtm_SOURCE_DIR}/../../../../modules/libwm/libwm.c
   ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_wm/mod_wm.c
   ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_sys/mod_sys.c
-  ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_flic/mod_flic.c
-  ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_regex/mod_regex.c
-  ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_regex/regex.c)
+  ${bgdrtm_SOURCE_DIR}/../../../../modules/mod_flic/mod_flic.c)
 
 # Include dirs
 include_directories(${bgdrtm_SOURCE_DIR}/../../../../core/bgdrtm/include
@@ -145,6 +145,7 @@ include_directories(${bgdrtm_SOURCE_DIR}/../../../../core/bgdrtm/include
                     ${SDL2_MIXER_INCLUDE_DIRS}
                     ${ZLIB_INCLUDE_DIRS}
                     ${VORBIS_INCLUDE_DIR}
+                    ${TRE_INCLUDE_DIR}
                     ${PNG_INCLUDE_DIR})
 # Main executable
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})

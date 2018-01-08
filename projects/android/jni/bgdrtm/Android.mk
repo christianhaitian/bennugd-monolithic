@@ -12,7 +12,7 @@ LOCAL_C_INCLUDES := $(CORE_PATH)/include \
 	$(LOCAL_PATH)/../../../../3rdparty/SDL_mixer/ \
 	$(LOCAL_PATH)/../../../../3rdparty/libpng-1.6.23/ \
 	$(LOCAL_PATH)/../../../../3rdparty/libglob-bsd/include/ \
-	$(LOCAL_PATH)/../../../../3rdparty/Chipmunk-6.1.3/include/chipmunk/ \
+	$(LOCAL_PATH)/../../../../3rdparty/tre/lib \
 	$(MODULES_PATH)/libbgload/ \
 	$(MODULES_PATH)/mod_say/ \
 	$(MODULES_PATH)/mod_string/ \
@@ -58,12 +58,12 @@ LOCAL_C_INCLUDES := $(CORE_PATH)/include \
 	$(MODULES_PATH)/mod_flic/ \
 	$(MODULES_PATH)/mod_regex/ \
 	$(MODULES_PATH)/mod_multi/ \
-	$(MODULES_PATH)/mod_chipmunk/ \
 	$(MODULES_PATH)/mod_iap/
 
 LOCAL_CFLAGS := -DVERSION='"1.0.0"' \
 	-D__BGDRTM__ \
 	-D__MONOLITHIC__ \
+	-DNO_MODCHIPMUNK \
 	-DNO_MODMATHI \
 	-DNO_MODIMAGE \
 	-DNO_MODICONV \
@@ -80,6 +80,7 @@ LOCAL_CFLAGS := -DVERSION='"1.0.0"' \
 	-O3
 
 LOCAL_SRC_FILES := \
+	../../../../3rdparty/libglob-bsd/src/glob.c \
 	../../../../core/bgdrtm/src/copy.c \
 	../../../../core/bgdrtm/src/dcbr.c \
 	../../../../core/bgdrtm/src/dirs.c \
@@ -93,7 +94,6 @@ LOCAL_SRC_FILES := \
 	../../../../core/common/debug.c \
 	../../../../core/common/files.c \
 	../../../../core/common/xctype.c \
-	../../../../3rdparty/libglob-bsd/src/glob.c \
 	../../../../modules/libbgload/bgload.c \
 	../../../../modules/mod_say/mod_say.c \
 	../../../../modules/mod_string/mod_string.c \
@@ -143,6 +143,7 @@ LOCAL_SRC_FILES := \
 	../../../../modules/libtext/libtext.c \
 	../../../../modules/mod_text/mod_text.c \
 	../../../../modules/mod_rand/mod_rand.c \
+	../../../../modules/mod_regex/mod_regex.c \
 	../../../../modules/mod_grproc/mod_grproc.c \
 	../../../../modules/libscroll/libscroll.c \
 	../../../../modules/mod_scroll/mod_scroll.c \
@@ -157,26 +158,11 @@ LOCAL_SRC_FILES := \
 	../../../../modules/mod_wm/mod_wm.c \
 	../../../../modules/mod_sys/mod_sys.c \
 	../../../../modules/mod_flic/mod_flic.c \
-	../../../../modules/mod_regex/mod_regex.c \
-	../../../../modules/mod_regex/regex.c \
 	../../../../modules/mod_multi/mod_multi.c \
-	../../../../modules/mod_chipmunk/Arreglos.c \
-	../../../../modules/mod_chipmunk/Constraints.c \
-	../../../../modules/mod_chipmunk/Cuerpo.c \
-	../../../../modules/mod_chipmunk/Espacio.c \
-	../../../../modules/mod_chipmunk/Handlers.c \
-	../../../../modules/mod_chipmunk/HeapSort.c \
-	../../../../modules/mod_chipmunk/LL.c \
-	../../../../modules/mod_chipmunk/Miscelanea.c \
-	../../../../modules/mod_chipmunk/agua.c \
-	../../../../modules/mod_chipmunk/arbitros.c \
-	../../../../modules/mod_chipmunk/automGenTerr.c \
-	../../../../modules/mod_chipmunk/convexHull.c \
-	../../../../modules/mod_chipmunk/main.c \
 	../../../../modules/mod_iap/mod_iap_fake.c
 
 LOCAL_LDLIBS := -llog -ldl -lz
 LOCAL_SHARED_LIBRARIES += SDL2 SDL2_mixer png
-LOCAL_STATIC_LIBRARIES += chipmunk
+LOCAL_STATIC_LIBRARIES += tre
 
 include $(BUILD_SHARED_LIBRARY)

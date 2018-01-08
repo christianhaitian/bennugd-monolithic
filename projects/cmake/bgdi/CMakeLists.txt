@@ -10,6 +10,7 @@ find_package(ZLIB REQUIRED)
 find_package(PNG REQUIRED)
 find_package(OGG REQUIRED)
 find_package(Vorbis REQUIRED)
+find_package(TRE REQUIRED)
 # Preprocessor macros
 add_definitions(-D__BGDI__)
 include(common_defs)
@@ -44,6 +45,7 @@ target_link_libraries(${PROJECT_NAME}
                       ${SDL2_MIXER_LIBRARIES}
                       ${ZLIB_LIBRARIES}
                       ${PNG_LIBRARIES}
+                      ${TRE_LIBRARY}
                       ${OGG_LIBRARY}
                       ${VORBIS_LIBRARY}
                       ${EXTRA_LIBS})

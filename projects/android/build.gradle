@@ -6,7 +6,7 @@ buildscript {
   }
   dependencies {
     // https://developer.android.com/studio/releases/gradle-plugin.html#revisions
-    classpath 'com.android.tools.build:gradle:2.3.1'
+    classpath 'com.android.tools.build:gradle:3.0.1'
     classpath 'com.google.gms:google-services:3.0.0'
   }
 }
@@ -37,10 +37,10 @@ project.ext {
 }
 
 android {
-    compileSdkVersion 25
+    compileSdkVersion 27
 
     // https://developer.android.com/studio/releases/build-tools.html
-    buildToolsVersion "25.0.2"
+    buildToolsVersion "27.0.3"
 
     sourceSets {
       main {
@@ -55,7 +55,7 @@ android {
     defaultConfig {
         applicationId 'org.bennugd.samplegame'
         minSdkVersion 12
-        targetSdkVersion 25
+        targetSdkVersion 27
     }
 
     signingConfigs {

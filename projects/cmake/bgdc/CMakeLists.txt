@@ -43,6 +43,7 @@ include_directories(${bgdc_SOURCE_DIR}/../../../core/bgdc/include
                     ${bgdc_SOURCE_DIR}/../../../modules/mod_video/
                     ${bgdc_SOURCE_DIR}/../../../modules/libmouse/
                     ${bgdc_SOURCE_DIR}/../../../modules/mod_mouse/
+                    ${bgdc_SOURCE_DIR}/../../../modules/mod_multi/
                     ${bgdc_SOURCE_DIR}/../../../modules/mod_map/
                     ${bgdc_SOURCE_DIR}/../../../modules/libfont/
                     ${bgdc_SOURCE_DIR}/../../../modules/mod_dir/
