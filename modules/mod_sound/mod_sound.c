@@ -259,6 +259,8 @@ static int load_song( const char * filename )
     Mix_Music *music = NULL;
     file      *fp;
 
+    SDL_Log("Trying to load %s", filename);
+
     if ( !audio_initialized && sound_init() ) return ( 0 );
 
     if ( !( fp = file_open( filename, "rb0" ) ) ) return ( 0 );
@@ -269,6 +271,7 @@ static int load_song( const char * filename )
         fprintf( stderr, "Couldn't load %s: %s\n", filename, SDL_GetError() );
         return( 0 );
     }
+    SDL_Log("Loaded successfully");
 
     return (( int )music );
 }
@@ -291,6 +294,7 @@ static int load_song( const char * filename )
 
 static int play_song( int id, int loops )
 {
+    SDL_Log("Called play_song();");
     if ( audio_initialized && id )
     {
         int result = Mix_PlayMusic(( Mix_Music * )id, loops );

@@ -92,6 +92,7 @@ static int modvideo_set_mode_4( INSTANCE * my, int * params )
 
 static int modvideo_set_fps( INSTANCE * my, int * params )
 {
+    SDL_Log("Called set_fps(%d, %d)", params[0], params[1]);
     gr_set_fps( params[0], params[1] ) ;
     return params[0];
 }

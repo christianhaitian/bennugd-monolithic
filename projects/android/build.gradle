@@ -53,8 +53,8 @@ android {
     }
 
     defaultConfig {
-        applicationId 'org.bennugd.samplegame'
-        minSdkVersion 12
+        applicationId 'com.bombergames.SoRR'
+        minSdkVersion 15
         targetSdkVersion 27
     }
 

@@ -104,13 +104,19 @@ static int modfile_fopen( INSTANCE * my, int * params )
     if ( params[1] < 0 || params[1] > 4 )
         params[0] = 0 ;
 
-    r = ( int ) file_open( string_get( params[0] ), ops[params[1]] ) ;
+    const char *p = string_get(params[0]);
+
+    file *fp = file_open( p, ops[params[1]] );
+    SDL_Log("Calling file_open(%s, %s) -> %d", p, ops[params[1]], r);
+
+    r = ( int ) fp ;
     string_discard( params[0] ) ;
     return r ;
 }
 
 static int modfile_fclose( INSTANCE * my, int * params )
 {
+    SDL_Log("Called fclose");
     file_close(( file * )params[0] ) ;
     return 1 ;
 }
@@ -191,7 +197,9 @@ static int modfile_fgets( INSTANCE * my, int * params )
         }
         string_concat( str, buffer );
     }
+    SDL_Log("Called fgets() -> %s", string_get(str));
     string_use( str ) ;
+    string_discard(str);
     return str ;
 }
 
@@ -234,7 +242,9 @@ static int modfile_feof( INSTANCE * my, int * params )
 
 static int modfile_exists( INSTANCE * my, int * params )
 {
-    int r = file_exists( string_get( params[0] ) ) ;
+    const char *p = string_get(params[0]);
+    int r = file_exists( p ) ;
+    SDL_Log("Wondering if file_exists(%s) -> %d", p, r);
     string_discard( params[0] ) ;
     return r ;
 }

@@ -736,7 +736,10 @@ static int modmap_pal_get( INSTANCE * my, int * params )
 static int modmap_load_fpg( INSTANCE * my, int * params )
 {
     int r;
-    r = gr_load_fpg( string_get( params[0] ) ) ;
+    const char *path = string_get(params[0]);
+    SDL_Log("Loading %s", path);
+    r = gr_load_fpg( path ) ;
+    SDL_Log("Result: %d", r);
     string_discard( params[0] ) ;
     return r ;
 }

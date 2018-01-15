@@ -131,6 +131,7 @@ static int moddir_chdir( INSTANCE * my, int * params )
 static int moddir_mkdir( INSTANCE * my, int * params )
 {
     const char * d = string_get( params[ 0 ] ) ;
+    SDL_Log("Told to mkdir(%s)", d);
     int ret = dir_create( d ) ;
     string_discard( params[ 0 ] ) ;
     return ( ret ) ;
@@ -147,6 +148,7 @@ static int moddir_rmdir( INSTANCE * my, int * params )
 static int moddir_rm( INSTANCE * my, int * params )
 {
     const char * d = string_get( params[ 0 ] ) ;
+    SDL_Log("Told to rm(%s)", d);
     int ret = dir_deletefile( d );
     string_discard( params[ 0 ] ) ;
     return ( ret ) ;

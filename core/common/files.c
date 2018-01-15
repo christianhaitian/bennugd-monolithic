@@ -142,9 +142,10 @@ int file_read( file * fp, void * buffer, int len )
 #endif
     
 #ifdef WITH_SDLRWOPS
-    if ( fp->type == F_RWOPS )
-    {
-        int retval = SDL_RWread( fp->rwops, buffer, 1, len );
+    if (fp->type == F_RWOPS) {
+        int retval = SDL_RWread(fp->rwops, buffer, 1, len);
+        fp->error  = (retval < len);
+        fp->eof    = (retval == 0);
         return retval;
     }
 #endif
@@ -230,13 +231,18 @@ int file_qgets( file * fp, char * buffer, int len )
 #endif
 
 #ifdef WITH_SDLRWOPS
-    else if ( fp->type == F_RWOPS )
-    {
-        while ( l < len )
-        {
-            SDL_RWread( fp->rwops, ptr, 1, 1 );
-            l++ ;
-            if ( *ptr++ == '\n' ) break ;
+    else if (fp->type == F_RWOPS) {
+        int retval = 0;
+        while (l < len) {
+            retval  = SDL_RWread(fp->rwops, ptr, 1, 1);
+            fp->eof = (retval == 0);
+            if (retval > 0) {
+                l += retval;
+            } else {
+                break;
+            }
+            if (*ptr++ == '\n')
+                break;
         }
         *ptr = 0 ;
         
@@ -320,13 +326,17 @@ int file_gets( file * fp, char * buffer, int len )
 #endif
 
 #ifdef WITH_SDLRWOPS
-    else if ( fp->type == F_RWOPS )
-    {
-        while ( l < len )
-        {
-            SDL_RWread(fp->rwops, ptr, 1, 1);
-            l++ ;
-            if ( *ptr++ == '\n' ) break ;
+    else if (fp->type == F_RWOPS) {
+        while (l < len) {
+            int retval = SDL_RWread(fp->rwops, ptr, 1, 1);
+            fp->eof = (retval == 0);
+            if (retval > 0) {
+                l += retval;
+            } else {
+                break;
+            }
+            if (*ptr++ == '\n')
+                break;
         }
         *ptr = 0 ;
         
@@ -703,12 +713,41 @@ static int open_raw( file * f, const char * filename, const char * mode )
     char    *p;
 
 #ifndef NO_ZLIB
-    if ( !strchr( mode, '0' ) )
-    {
-        f->type = F_GZFILE ;
-        f->gz = gzopen( filename, mode ) ;
-        f->eof  = 0 ;
-        if ( f->gz ) return 1 ;
+    if (!strchr(mode, '0')) {
+        if (strchr(mode, 'r')) {
+            /*
+             * First of all, determine if file is actually in gzip format
+             * by reading its first two bytes as its magic number.
+             * Zlib can read uncompressed files, but there appear to be
+             * bugs in the uncompressed reader and we'd rather use fopen
+             * for those.
+             *
+             * The two bytes are read separately to account for endianess
+             * issues.
+             */
+            FILE *fd;
+            unsigned char byte1, byte2;
+
+            fd = fopen(filename, "rb");
+            if (fd != NULL) {
+                fread(&byte1, 1, 1, fd);
+                fread(&byte2, 1, 1, fd);
+                fclose(fd);
+
+                if (byte1 == 0x1f && byte2 == 0x8b) {
+                    f->type = F_GZFILE;
+                    f->gz   = gzopen(filename, mode);
+                    f->eof  = 0;
+                }
+            }
+        } else {
+            f->type = F_GZFILE;
+            f->gz   = gzopen(filename, mode);
+            f->eof  = 0;
+        }
+
+        if (f->gz)
+            return 1;
     }
 #endif
 
@@ -971,11 +1010,16 @@ char * whereis( char *file )
         if ( ( p = strchr( pact, ENV_PATH_SEP ) ) ) *p = '\0';
         sprintf( fullname, "%s%s%s", pact, ( pact[ strlen( pact ) - 1 ] == ENV_PATH_SEP ) ? "" : PATH_SEP, file );
 
-        if ( !stat( fullname, &st ) && S_ISREG( st.st_mode ) )
-        {
-            pact = strdup( pact );
-            if ( p ) *p = ENV_PATH_SEP;
-            return ( pact );
+#if _MSC_VER
+        if (!stat(fullname, &st) && (((st.st_mode) & _S_IFMT) == _S_IFREG)) {
+#else
+        if (!stat(fullname, &st) && S_ISREG(st.st_mode)) {
+#endif
+            pact = strdup(pact);
+            if (p) {
+                *p = ENV_PATH_SEP;
+            }
+            return (pact);
         }
 
         if ( !p ) break;

@@ -283,6 +283,8 @@ int gr_set_mode( int width, int height, int depth )
     Uint32 Amask = 0;
     char * e;
 
+    SDL_Log("Called set_mode with %dx%dx%d", width, height, depth);
+
     full_screen = ( GLODWORD( libvideo, GRAPH_MODE ) & MODE_FULLSCREEN ) ? 1 : 0 ;
     double_buffer = ( GLODWORD( libvideo, GRAPH_MODE ) & MODE_DOUBLEBUFFER ) ? 1 : 0 ;
     hardware_scr = ( GLODWORD( libvideo, GRAPH_MODE ) & MODE_HARDWARE ) ? 1 : 0 ;
@@ -331,7 +333,7 @@ int gr_set_mode( int width, int height, int depth )
         bitmap_destroy( scrbitmap ) ;
         scrbitmap = NULL ;
     }
-    
+
     // Use the new & fancy SDL 2 routines
     if(!window && !renderer) {
         sdl_flags = SDL_WINDOW_SHOWN;
@@ -362,19 +364,19 @@ int gr_set_mode( int width, int height, int depth )
             return -1;
         }
     }
-    
+
     // Clear the screen
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
-    
+
     // Enable SDL scaling, if needed
     if(surface_width != width || surface_height != height) {
         // I should add support for this from BennuGD
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // make the scaled rendering look smoother.
         SDL_RenderSetLogicalSize(renderer, width, height);
     }
-    
+
     // This way we can force only one of the sizes (or both) to be native
     if (width == 0) {
         SDL_GetWindowSize(window, &width, NULL);
@@ -382,7 +384,7 @@ int gr_set_mode( int width, int height, int depth )
     if (height == 0) {
         SDL_GetWindowSize(window, NULL, &height);
     }
-    
+
     // What's the mode for 8bpp?
     // We could support BGR/YUV and other display modes here, too
     if(enable_16bits) {
@@ -394,7 +396,7 @@ int gr_set_mode( int width, int height, int depth )
                                    format,
                                    SDL_TEXTUREACCESS_STREAMING,
                                    width, height);
-    
+
     // Create a SDL_Surface for the pixel data until the complete rendering pipeline
     // is handled by SDL_Render
     SDL_PixelFormatEnumToMasks(format, &texture_depth, &Rmask, &Gmask, &Bmask, &Amask);
@@ -529,15 +531,15 @@ void __bgdexport( libvideo, module_finalize )()
         directdraw = NULL;
     }
 #endif
-    
+
     if ( renderer ) {
         SDL_DestroyRenderer(renderer);
     }
-    
+
     if ( window ) {
         SDL_DestroyWindow(window);
     }
-        
+
     if ( SDL_WasInit( SDL_INIT_VIDEO ) ) SDL_QuitSubSystem( SDL_INIT_VIDEO );
 }
 

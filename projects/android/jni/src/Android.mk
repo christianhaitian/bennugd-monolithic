@@ -23,7 +23,7 @@ LOCAL_CFLAGS := \
 	-O3
 
 # Add your application source files here...
-LOCAL_SRC_FILES := ../../../../3rdparty/SDL2-2.0.5/src/main/android/SDL_android_main.c \
+LOCAL_SRC_FILES := ../../../../3rdparty/SDL2/src/main/android/SDL_android_main.c \
 	main.c
 
 LOCAL_SHARED_LIBRARIES  += bgdrtm SDL2

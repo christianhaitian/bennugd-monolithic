@@ -162,7 +162,7 @@ LOCAL_SRC_FILES := \
 	../../../../modules/mod_iap/mod_iap_fake.c
 
 LOCAL_LDLIBS := -llog -ldl -lz
-LOCAL_SHARED_LIBRARIES += SDL2 SDL2_mixer png
-LOCAL_STATIC_LIBRARIES += tre
+LOCAL_SHARED_LIBRARIES += SDL2 SDL2_mixer
+LOCAL_STATIC_LIBRARIES += tre png
 
 include $(BUILD_SHARED_LIBRARY)
