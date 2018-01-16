@@ -1,6 +1,7 @@
 # Bump up warning levels appropriately for clang, gcc & msvc
 # Also set debug/optimization flags depending on the build type. IDE users choose this when
 # selecting the build mode in their IDE
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 if (${CMAKE_C_COMPILER_ID} MATCHES "GNU" OR
     ${CMAKE_C_COMPILER_ID} MATCHES "Clang" OR
     ${CMAKE_C_COMPILER_ID} MATCHES "AppleClang")

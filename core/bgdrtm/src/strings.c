@@ -1,7 +1,7 @@
 /*
- *  Copyright © 2006-2012 SplinterGU (Fenix/Bennugd)
- *  Copyright © 2002-2006 Fenix Team (Fenix)
- *  Copyright © 1999-2002 José Luis Cebrián Pagüe (Fenix)
+ *  Copyright ï¿½ 2006-2012 SplinterGU (Fenix/Bennugd)
+ *  Copyright ï¿½ 2002-2006 Fenix Team (Fenix)
+ *  Copyright ï¿½ 1999-2002 Josï¿½ Luis Cebriï¿½n Pagï¿½e (Fenix)
  *
  *  This file is part of Bennu - Game Development
  *
@@ -654,6 +654,8 @@ int string_comp( int code1, int code2 )
 {
     const char * str1 = string_get( code1 ) ;
     const char * str2 = string_get( code2 ) ;
+
+    SDL_Log("Told to compare \"%s\" <-> \"%s\"\n", str1, str2);
 
     return strcmp( str1, str2 ) ;
 }

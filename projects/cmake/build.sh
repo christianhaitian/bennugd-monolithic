@@ -106,7 +106,7 @@ cp bgdi_build/bgdi${EXT} ${BINDIR}
 # We can download SDL2 & SDL_mixer from their sites, and use their binaries
 # which include far less deps
 if [ "$OS" = "Msys" ] || [ "$OS" = "Darwin" ]; then
-    if ! [ "${BUILD_TYPE}" = "Debug" ]; then
+#    if ! [ "${BUILD_TYPE}" = "Debug" ]; then
         copy_dependencies ${BINDIR} /mingw32/bin/
-    fi
+#    fi
 fi

@@ -1,7 +1,7 @@
 /*
- *  Copyright © 2006-2012 SplinterGU (Fenix/Bennugd)
- *  Copyright © 2002-2006 Fenix Team (Fenix)
- *  Copyright © 1999-2002 José Luis Cebrián Pagüe (Fenix)
+ *  Copyright ï¿½ 2006-2012 SplinterGU (Fenix/Bennugd)
+ *  Copyright ï¿½ 2002-2006 Fenix Team (Fenix)
+ *  Copyright ï¿½ 1999-2002 Josï¿½ Luis Cebriï¿½n Pagï¿½e (Fenix)
  *
  *  This file is part of Bennu - Game Development
  *
@@ -199,7 +199,6 @@ static int modfile_fgets( INSTANCE * my, int * params )
     }
     SDL_Log("Called fgets() -> %s", string_get(str));
     string_use( str ) ;
-    string_discard(str);
     return str ;
 }
 
