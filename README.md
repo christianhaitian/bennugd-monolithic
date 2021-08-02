@@ -9,9 +9,11 @@ tre-agrep \
 libtre5 \
 libtre-dev \
 libpng-dev \
-zlib1g-dev
+libvorbis-dev \
+libogg-dev \
+zlib1g-dev \
 
-In Ubuntu 16.04 or newer, install with `sudo apt -y install tre-agrep libtre5 libtre-dev libpng-dev zlib1g-dev`
+In Ubuntu 16.04 or newer, install with `sudo apt -y install tre-agrep libtre5 libtre-dev libpng-dev libvorbis-dev libogg-dev zlib1g-dev`
 
 then \
 `git clone https://github.com/christianhaitian/bennugd-monolithic.git` \
@@ -20,3 +22,5 @@ then \
 
 Grab the bgdi executable and use it to launch the bennugd game. \
 ex. ./bgdi SorR.dat
+
+You can clean the directory by doing `./build.sh clean`

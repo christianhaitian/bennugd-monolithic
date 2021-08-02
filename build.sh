@@ -31,6 +31,15 @@ function copy_dependencies {
     fi
 }
 
+if [[ "$1" == "clean" ]]; then
+  rm -rf projects/cmake/bgdc_build
+  rm -rf projects/cmake/bgdi_build
+  rm -rf projects/cmake/bin
+  rm bgdc
+  rm bgdi
+  exit 0
+fi
+
 # Determine the OS
 if [ $(uname) = "Darwin" ]; then
     OS=Darwin
@@ -42,10 +51,10 @@ fi
 # Valid values are:
 # Debug Release RelWithDebInfo MinSizeRel
 # Otherwise compile with Debug configuration
-BUILD_TYPE="Debug"
-if [ $# -eq 1 ]; then
-    BUILD_TYPE=$1
-fi
+BUILD_TYPE="Release"
+#if [ $# -eq 1 ]; then
+#    BUILD_TYPE=$1
+#fi
 
 echo "Build type: ${BUILD_TYPE}"
 
@@ -60,7 +69,7 @@ if [ "$OS" = "Msys" ]; then
 elif [ "$OS" = "GNU/Linux" ]; then
     PROJECTTYPE="Ninja"
     EXT=""
-    BINDIR="bin/gnulinux32"
+    BINDIR="../../"
     if ! [ "$(type -p ninja)" = "" ]; then
         BUILDTOOL="ninja"
         INSTALLTOOL="ninja install"
@@ -70,11 +79,11 @@ elif [ "$OS" = "GNU/Linux" ]; then
     fi
 
     # Ubuntu? => Manually specify library locations (beats me)
-    if [ "$(lsb_release -is)" = "Ubuntu" ]; then
-        EXTRACMAKEFLAGS="-DZLIB_LIBRARY=/usr/lib/i386-linux-gnu/libz.so -DPNG_LIBRARY=/usr/lib/i386-linux-gnu/libpng.so -DFREETYPE_LIBRARY=/usr/lib/i386-linux-gnu/libfreetype.so -DOPENAL_LIBRARY=/usr/lib/i386-linux-gnu/libopenal.so"
-    elif [ "$(lsb_release -is)" = "Fedora" ]; then
-        EXTRACMAKEFLAGS="-DZLIB_LIBRARY=/usr/lib/libz.so"
-    fi
+#    if [ "$(lsb_release -is)" = "Ubuntu" ]; then
+#        EXTRACMAKEFLAGS="-DZLIB_LIBRARY=/usr/lib/i386-linux-gnu/libz.so -DPNG_LIBRARY=/usr/lib/i386-linux-gnu/libpng.so -DFREETYPE_LIBRARY=/usr/lib/i386-linux-gnu/libfreetype.so -DOPENAL_LIBRARY=/usr/lib/i386-linux-gnu/libopenal.so"
+#    elif [ "$(lsb_release -is)" = "Fedora" ]; then
+#        EXTRACMAKEFLAGS="-DZLIB_LIBRARY=/usr/lib/libz.so"
+#    fi
 elif [ "$OS" = "Darwin" ]; then
     PROJECTTYPE="Ninja"
     EXT=""
@@ -84,6 +93,7 @@ elif [ "$OS" = "Darwin" ]; then
 fi
 
 # Compile BGDC and BGDI
+cd projects/cmake
 for PROJECT in bgdc bgdi; do
     echo "Making ${PROJECT}"
     rm -rf ${PROJECT}_build
@@ -98,8 +108,12 @@ done
 if ! [ -d ${BINDIR} ]; then
     mkdir -p ${BINDIR}
 fi
+
+strip bgdc_build/bgdc${EXT}
+strip bgdi_build/bgdi${EXT}
 cp bgdc_build/bgdc${EXT} ${BINDIR}
 cp bgdi_build/bgdi${EXT} ${BINDIR}
+cd ../../
 
 # Copy dependencies to the bin dir (for Windows/OS X)
 # However, we could do better:
