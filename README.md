@@ -13,7 +13,10 @@ zlib1g-dev
 
 In Ubuntu 16.04 or newer, install with `sudo apt -y install tre-agrep libtre5 libtre-dev libpng-dev zlib1g-dev`
 
-then
-`git clone https://github.com/christianhaitian/bennugd-monolithic.git`
-`cd bennugd-monolithic`
+then \
+`git clone https://github.com/christianhaitian/bennugd-monolithic.git` \
+`cd bennugd-monolithic` \
 `./build.sh`
+
+Grab the bgdi executable and use it to launch the bennugd game. \
+ex. ./bgdi SorR.dat
